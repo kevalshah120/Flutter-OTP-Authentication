@@ -12,17 +12,18 @@ Future<void> main() async {
     Platform.isAndroid
         ? await Firebase.initializeApp(
             options: const FirebaseOptions(
-                apiKey: 'xxxxxxxxxxxx-g-famDgC3jx6VV4h-xxxxxx',
-                appId: '1:xxxxxxxxxxxx:android:xxxxxxxb7ea052854b0005',
-                messagingSenderId: 'xxxxxxxxxxxx',
-                projectId: 'flutterxxxxxxxxx-9xxxa'))
+                apiKey: 'AIzaSyAbC4WPkWHx5TOkxpLN8JB-M2Bgo69MuRk',
+                appId: '1:10220019127:android:d9ee6f170bc6d1f11fdc32',
+                messagingSenderId: '10220019127',
+                projectId: 'stockchain-789e1')
+                )
+
         : await Firebase.initializeApp();
 
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

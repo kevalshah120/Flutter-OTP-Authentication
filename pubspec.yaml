@@ -26,6 +26,7 @@ dependencies:
   firebase_auth: ^4.17.4
   firebase_core: ^2.25.4
   otp_pin_field: ^1.2.2
+  yahoo_finance_data_reader: ^1.0.7
 
 dev_dependencies:
   flutter_test:
