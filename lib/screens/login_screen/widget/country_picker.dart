@@ -38,9 +38,6 @@ class _CountryPickerState extends State<CountryPicker> {
 
   // parse json data into model
   List<CountryModel> parseJson(String response) {
-    if (response == null) {
-      return [];
-    }
     final parsed = json.decode(response.toString()).cast<Map<String, dynamic>>();
     return parsed.map<CountryModel>((json) => CountryModel.fromJson(json as Map<String, dynamic>)).toList() as List<CountryModel>;
   }

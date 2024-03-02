@@ -2,10 +2,8 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
-import 'screens/home_screen/home_screen.dart';
-import 'screens/login_screen/login_screen.dart';
-import 'screens/otp_screen/otp_screen.dart';
+import 'package:flutter_otp_module/screens/stocksearch.dart';
+import 'screens/WatchlitScreen.dart';
 
 Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -32,10 +30,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: const Color.fromARGB(255, 253, 188, 51),
       ),
-      home: LoginScreen(),
+      home: WatchlistScreen(),
       routes: <String, WidgetBuilder>{
-        '/otpScreen': (BuildContext ctx) => OtpScreen(),
-        '/homeScreen': (BuildContext ctx) => HomeScreen(),
+        '/watchlistScreen': (BuildContext ctx) => WatchlistScreen(),
+        '/searchScreen': (context) => SearchScreen(),
       },
     );
   }
