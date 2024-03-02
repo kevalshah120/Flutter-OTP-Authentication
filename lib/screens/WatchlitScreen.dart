@@ -1,24 +1,30 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:flutter_otp_module/services/function.dart';
+import 'package:flutter_otp_module/screens/constant.dart';
+import 'package:web3dart/web3dart.dart';
+import 'package:http/http.dart';
 class WatchlistScreen extends StatefulWidget {
   @override
   _WatchlistScreenState createState() => _WatchlistScreenState();
 }
-
+Web3Client? ethClient;
 class _WatchlistScreenState extends State<WatchlistScreen> {
   List<String> stocks = ['Y', 'GOOGL', 'MSFT', 'AMZN'];
   Map<String, double> prices = {}; // Map to store prices for each stock
   Map<String, double> changes = {}; // Map to store changes for each stock
-
+  Client? httpClient;
   int selectedIndex = -1;
   bool isContainerVisible = false;
   String selectedStock = '';
 
   @override
   void initState() {
+    httpClient = Client();
+    ethClient = Web3Client(infura_url, httpClient!);
     super.initState();
     fetchStockData();
   }
@@ -70,37 +76,58 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
       backgroundColor: Color.fromRGBO(231, 231, 231, 1),
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(231, 231, 231, 1),
-        centerTitle: true,
+        centerTitle: false,
         title: Text(
-          'TRACCIA',
-          style: TextStyle(
-            color: const Color.fromARGB(255, 0, 0, 0),
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          'MY Watchlist',
+          style: GoogleFonts.lato(),
         ),
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
-          children: [
-            Container(
-              color: Color.fromARGB(255, 155, 255, 124),
-              margin: EdgeInsets.only(top: 30),
-              height: 125,
-              child: Text("My Watchlist", style: TextStyle(fontSize: 20)),
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(),
+              child: Center(
+                child: Text(
+                  'TRACCIA',
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
             ListTile(
-              title: Text('My Watchlist(40)'),
+              leading: Icon(Icons.home),
+              title: Text('Home'),
               onTap: () {
-                // Navigate to desired page
+                Navigator.pop(context);
               },
             ),
+            Divider(),
             ListTile(
+              leading: Icon(Icons.remove_red_eye_outlined),
+              title: Text('My Watchlist(10)'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.stadium_rounded),
               title: Text('My Position(0)'),
               onTap: () {
-                // Navigate to desired page
+                Navigator.pop(context);
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.exit_to_app),
+              title: Text('Logout'),
+              onTap: () {
+                Navigator.pop(context);
               },
             ),
           ],
@@ -218,15 +245,126 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
             height: isContainerVisible ? 200 : 0,
             width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 54, 55, 56),
+              color: Colors.white,
               borderRadius: isContainerVisible
                   ? BorderRadius.vertical(top: Radius.circular(20))
                   : BorderRadius.zero,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.5),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: Offset(0, 5),
+                )
+              ],
             ),
-            child: Center(
-              child: Text(
-                selectedStock,
-                style: TextStyle(color: Colors.white, fontSize: 20),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 10.0), // Adjusted padding
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            selectedStock,
+                            style: TextStyle(
+                              fontFamily: 'RobotoMono',
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.w500,
+                              color: const Color.fromARGB(255, 0, 0, 0),
+                            ),
+                          ),
+                        ),
+                        if (stocks.contains(selectedStock) && stocks.indexOf(selectedStock) < prices.length)
+                          Padding(
+                            padding: EdgeInsets.only(right: 16.0),
+                            child: Text(
+                              '${prices[stocks.indexOf(selectedStock)]?.toStringAsFixed(2) ?? 'N/A'}',
+                              style: TextStyle(
+                                fontFamily: 'RobotoMono',
+                                fontSize: 24.0,
+                                fontWeight: FontWeight.w500,
+                                color: (prices[stocks.indexOf(selectedStock)] ?? 0) < 0 ? Colors.red : Colors.green,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.centerRight,
+                    padding: EdgeInsets.symmetric(horizontal: 40.0),
+                    child: Text(
+                      "VALUE",
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                      height: 10), // Add some space below the selected stock
+                  Divider(color: Colors.grey), // Horizontal line
+                  SizedBox(height: 10), // Add some space
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      InkWell(
+                        child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 12.0),
+                          height: 45,
+                          width: 160,
+                          decoration: BoxDecoration(
+                            color: Colors
+                                .blue, // Set background color for the first container
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'BUY',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        onTap: (){},
+                      ),
+                      SizedBox(width: 16), // Add some space between buttons
+                      InkWell(
+                        child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 12.0),
+                          height: 45,
+                          width: 160,
+                          decoration: BoxDecoration(
+                            color: Colors
+                                .green, // Set background color for the second container
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'SELL',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontFamily: 'RobotoMono',
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        onTap: ()  {
+                          print("asddddddddkjfkjanfkjadnfkjanfiewjnkzj ckjaegnioqenfoiangioqebno dvoqe gt");
+                          startElection("lala",ethClient!);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
