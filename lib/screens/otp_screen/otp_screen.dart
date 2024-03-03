@@ -1,10 +1,11 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:otp_pin_field/otp_pin_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ignore: must_be_immutable
 class OtpScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class OtpScreen extends StatefulWidget {
 class _OtpScreenState extends State<OtpScreen> {
   late String phoneNo;
   late String smsOTP;
+  TextEditingController otpController = TextEditingController();
   late String verificationId;
   String errorMessage = '';
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -29,7 +31,8 @@ class _OtpScreenState extends State<OtpScreen> {
     super.didChangeDependencies();
     // Load data only once after screen load
     if (widget._isInit) {
-      widget._contact = '${ModalRoute.of(context)?.settings.arguments as String}';
+      widget._contact =
+      '${ModalRoute.of(context)?.settings.arguments as String}';
       generateOtp(widget._contact);
       widget._isInit = false;
     }
@@ -48,6 +51,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -84,7 +88,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   height: screenHeight * 0.02,
                 ),
                 Text(
-                  'Enter A 6 digit number that was sent to ${widget._contact}',
+                  'Enter 6 digit number that was sent to ${widget._contact}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 18,
@@ -95,7 +99,8 @@ class _OtpScreenState extends State<OtpScreen> {
                   height: screenHeight * 0.04,
                 ),
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: screenWidth > 600 ? screenWidth * 0.2 : 16),
+                  margin: EdgeInsets.symmetric(
+                      horizontal: screenWidth > 600 ? screenWidth * 0.2 : 16),
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
                       color: Colors.white,
@@ -118,7 +123,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           key: _otpPinFieldKey,
                           textInputAction: TextInputAction.done,
                           maxLength: 6,
-                          fieldWidth: 40,
+                          fieldWidth: 30,
                           onSubmit: (text) {
                             smsOTP = text;
                           },
@@ -143,7 +148,8 @@ class _OtpScreenState extends State<OtpScreen> {
                           alignment: Alignment.center,
                           child: const Text(
                             'Verify',
-                            style: TextStyle(color: Colors.black, fontSize: 16.0),
+                            style:
+                            TextStyle(color: Colors.black, fontSize: 16.0),
                           ),
                         ),
                       ),
@@ -188,18 +194,20 @@ class _OtpScreenState extends State<OtpScreen> {
       return;
     }
     try {
-      final AuthCredential credential = PhoneAuthProvider.credential(
+      final AuthCredential credential = await PhoneAuthProvider.credential(
         verificationId: verificationId,
         smsCode: smsOTP,
       );
       final UserCredential user = await _auth.signInWithCredential(credential);
       final User? currentUser = _auth.currentUser;
       assert(user.user?.uid == currentUser?.uid);
-      Navigator.pushReplacementNamed(context, '/homeScreen');
-    } on PlatformException catch(e){
-      handleError(e);
-    }
-    catch (e) {
+
+      // Update isLoggedIn flag after successful OTP verification
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('isLoggedIn', true);
+
+      Navigator.pushReplacementNamed(context, '/watchlistScreen');
+    } catch (e) {
       print('error $e');
     }
   }

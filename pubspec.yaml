@@ -28,6 +28,9 @@ dependencies:
   otp_pin_field: ^1.2.2
   yahoo_finance_data_reader: ^1.0.7
   http: ^1.2.0
+  web3dart: ^2.7.2
+  google_fonts: ^6.2.0
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +53,7 @@ flutter:
     - assets/otp_icon.png
     - assets/countrycodes.json
     - assets/images/
+    - assets/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

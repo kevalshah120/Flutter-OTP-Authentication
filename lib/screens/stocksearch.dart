@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -68,96 +69,38 @@ class _SearchScreenState extends State<SearchScreen> {
           //if length is 0 then opens most searched
           searchResults.length > 0
               ? Expanded(
-                  child: ListView.builder(
-                    itemCount: searchResults.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        trailing: Icon(CupertinoIcons.add_circled),
-                        title: Text(searchResults[index]
-                            ['1. symbol']), // Access symbol key
-                      );
+            child: ListView.builder(
+              itemCount: searchResults.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  trailing: InkWell(
+                    child: Icon(CupertinoIcons.add_circled),
+                    onTap: () {
+                      saveToSharedPreferences(
+                          searchResults[index]['1. symbol']);
                     },
                   ),
-                )
-              : Column(
-                  children: [
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      padding: EdgeInsets.symmetric(horizontal: 25.0),
-                      margin: EdgeInsets.symmetric(vertical: 5.0),
-                      child: Text(
-                        "Most searched",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 25),
-                      ),
-                    ),
-
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "TATA MOTORS",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              Text(
-                                "RELIENCE",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              Text(
-                                "ICICIBANK",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                "SBIN",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              Text(
-                                "NIFTY",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              Text(
-                                "ITC",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "SENSEX",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              Text(
-                                "TATASTEEL",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              Text(
-                                "AXISBANK",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
+                  title: Text(searchResults[index]
+                  ['1. symbol']), // Access symbol key
+                );
+              },
+            ),
+          )
+              : Container()
         ],
       ),
     );
   }
+}
+Future<void> saveToSharedPreferences(String symbol) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // Retrieve existing data or create an empty list
+  List<String> savedSymbols = prefs.getStringList('savedSymbols') ?? [];
+
+  // Add the new symbol to the list
+  savedSymbols.add(symbol);
+
+  // Save the updated list back to SharedPreferences
+  await prefs.setStringList('savedSymbols', savedSymbols);
 }

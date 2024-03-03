@@ -1,19 +1,125 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_otp_module/services/function.dart';
 import 'package:flutter_otp_module/screens/constant.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:http/http.dart';
+import '../services/function.dart';
+import 'mylist.dart';
+// Define BuyPopup widget
+class BuyPopup extends StatefulWidget {
+  final String selectedStock;
+  final double sharePrice;
+  final String action;
+
+  BuyPopup(
+      {required this.selectedStock,
+        required this.sharePrice,
+        required this.action});
+
+  @override
+  _BuyPopupState createState() => _BuyPopupState();
+}
+
+class _BuyPopupState extends State<BuyPopup> {
+  TextEditingController quantityController = TextEditingController();
+  double totalAmount = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    quantityController.addListener(calculateTotalAmount);
+  }
+
+  @override
+  void dispose() {
+    quantityController.removeListener(calculateTotalAmount);
+    quantityController.dispose();
+    super.dispose();
+  }
+
+  void calculateTotalAmount() {
+    setState(() {
+      int quantity = int.tryParse(quantityController.text) ?? 0;
+      totalAmount = widget.sharePrice * quantity;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('${widget.action} Shares'),
+      backgroundColor:
+      Colors.white, // Set the background color of the AlertDialog
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Stock: ${widget.selectedStock}'),
+          SizedBox(height: 10),
+          Text('Share Price: \₹${widget.sharePrice.toStringAsFixed(2)}'),
+          SizedBox(height: 10),
+          TextField(
+            controller: quantityController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Quantity',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              filled: true,
+              fillColor: Colors.grey[200], // Set background color
+              // Add an icon
+              hintText: 'Enter quantity', // Placeholder text
+              hintStyle: TextStyle(
+                  color: Color.fromARGB(
+                      255, 75, 74, 74)), // Color of placeholder text
+            ),
+            style: TextStyle(color: Colors.black), // Text color
+          ),
+          SizedBox(height: 10),
+          Text('Total Amount: \₹${totalAmount.toStringAsFixed(2)}'),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            String quantity = quantityController.text;
+            print('Quantity: $quantity, Total Amount: $totalAmount');
+            buyStock("lala",40,600,ethClient!);
+          },
+          child: Text(
+            '${widget.action}',
+            style: TextStyle(color: Colors.white), // Set text color to white
+          ),
+          style: ButtonStyle(
+            backgroundColor:
+            MaterialStateColor.resolveWith((states) => Colors.green),
+          ),
+        ),
+      ],
+    );
+  }
+}
 class WatchlistScreen extends StatefulWidget {
   @override
   _WatchlistScreenState createState() => _WatchlistScreenState();
 }
 Web3Client? ethClient;
 class _WatchlistScreenState extends State<WatchlistScreen> {
-  List<String> stocks = ['Y', 'GOOGL', 'MSFT', 'AMZN'];
+  List<String> stocks = ['RELIANCE.BSE', 'TATAMOTORS.BSE', 'YESBANK.BSE', 'TATAPOWER.BSE', 'AZAD.BSE', 'HGINFRA.BSE','IRCON.BSE','IIFL.BSE','MAZDOCK.BSE','JKPAPER.BSE','LIKHITHA.BSE','GEPIL.BSE'];
   Map<String, double> prices = {}; // Map to store prices for each stock
   Map<String, double> changes = {}; // Map to store changes for each stock
   Client? httpClient;
@@ -32,7 +138,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
   Future<void> fetchStockData() async {
     for (String stock in stocks) {
       String apiUrl =
-          '';
+          'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=$stock&apikey=NYI9LCVLHOLYA8R5';
       try {
         http.Response response = await http.get(Uri.parse(apiUrl));
         if (response.statusCode == 200) {
@@ -103,31 +209,29 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
               leading: Icon(Icons.home),
               title: Text('Home'),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => WatchlistScreen()),
+                );
               },
             ),
             Divider(),
             ListTile(
               leading: Icon(Icons.remove_red_eye_outlined),
-              title: Text('My Watchlist(10)'),
+              title: Text('My Watchlist'),
               onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.stadium_rounded),
-              title: Text('My Position(0)'),
-              onTap: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => WatchListScreen()),
+                );
               },
             ),
             Divider(),
             ListTile(
               leading: Icon(Icons.exit_to_app),
               title: Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
+              onTap: () async {
+                await logout(context);
               },
             ),
           ],
@@ -216,7 +320,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  '\$${prices[stocks[index]]?.toStringAsFixed(2) ?? '0.00'}',
+                                  '${prices[stocks[index]]?.toStringAsFixed(2) ?? '0.00'}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: (prices[stocks[index]] ?? 0) > 0 ? Colors.green : Colors.red,
@@ -333,9 +437,17 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                             ),
                           ),
                         ),
-                        onTap: (){
-                          print("asddddddddkjfkjanfkjadnfkjanfiewjnkzj BUY CALLED dvoqe gt");
-                          buyStock("tata",40,600,ethClient!);
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return BuyPopup(
+                                selectedStock: selectedStock,
+                                sharePrice: prices[selectedStock] ?? 0.0,
+                                action: 'Buy',
+                              );
+                            },
+                          );
                         },
                       ),
                       SizedBox(width: 16), // Add some space between buttons
@@ -346,8 +458,8 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                           width: 160,
                           decoration: BoxDecoration(
                             color: Colors
-                                .green, // Set background color for the second container
-                            borderRadius: BorderRadius.circular(3),
+                                .red, // Set background color for the second container
+                            borderRadius: BorderRadius.circular(1),
                           ),
                           child: Center(
                             child: Text(
@@ -360,9 +472,17 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                             ),
                           ),
                         ),
-                        onTap: ()  {
-                          print("asddddddddkjfkjanfkjadnfkjanfiewjnkzj ckjaegnioqenfoiangioqebno dvoqe gt");
-                          buyStock("lala",40,600,ethClient!);
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return BuyPopup(
+                                selectedStock: selectedStock,
+                                sharePrice: prices[selectedStock] ?? 0.0,
+                                action: 'Sell',
+                              );
+                            },
+                          );
                         },
                       ),
                     ],
@@ -376,7 +496,22 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
     );
   }
 }
+Future<void> logout(BuildContext context) async {
+  try {
+    await FirebaseAuth.instance.signOut();
 
+    // Clear user session
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false);
+
+    // Clear additional data (replace 'savedSymbols' with your actual key)
+    await prefs.remove('savedSymbols');
+
+    Navigator.pushReplacementNamed(context, '/login');
+  } catch (e) {
+    print('Error during logout: $e');
+  }
+}
 void main() {
   runApp(MaterialApp(
     home: WatchlistScreen(),

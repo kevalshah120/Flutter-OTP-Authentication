@@ -28,7 +28,33 @@ Future<String> callFunction(String funcname, List<dynamic> args,
 }
 
 Future<String> buyStock(String name,int price,int data, Web3Client ethClient) async {
-  var response =
-  await callFunction('buyStock', [name,BigInt.from(price),BigInt.from(data)], ethClient, owner_private_key);
-  print('Election started successfully');
+  EthPrivateKey credentials = EthPrivateKey.fromHex(owner_private_key);
+  DeployedContract contract = await loadContract();
+  final result = await ethClient.sendTransaction(
+      credentials,
+      Transaction.callContract(
+        contract: contract,
+        function: contract.function('buyStock'),
+        parameters: ['Lala',BigInt.from(1100),BigInt.from(100)],
+      ),
+      chainId: null,
+      fetchChainIdFromNetworkId: true);
+  print(result);
+  return result;
 }
+Future<String> sellStock(String name,int price,int data, Web3Client ethClient) async {
+  EthPrivateKey credentials = EthPrivateKey.fromHex(owner_private_key);
+  DeployedContract contract = await loadContract();
+  final result = await ethClient.sendTransaction(
+      credentials,
+      Transaction.callContract(
+        contract: contract,
+        function: contract.function('buyStock'),
+        parameters: [name,BigInt.from(price),BigInt.from(data)],
+      ),
+      chainId: null,
+      fetchChainIdFromNetworkId: true);
+  print(result);
+  return result;
+}
+
