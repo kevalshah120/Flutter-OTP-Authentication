@@ -140,14 +140,14 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 16),
-                Text(
-                  'Text as Watchlist',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                // SizedBox(height: 16),
+                // Text(
+                //   'Text as Watchlist',
+                //   style: TextStyle(
+                //     fontSize: 18,
+                //     fontWeight: FontWeight.bold,
+                //   ),
+                // ),
                 SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
@@ -333,7 +333,10 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                             ),
                           ),
                         ),
-                        onTap: (){},
+                        onTap: (){
+                          print("asddddddddkjfkjanfkjadnfkjanfiewjnkzj BUY CALLED dvoqe gt");
+                          buyStock("tata",40,600,ethClient!);
+                        },
                       ),
                       SizedBox(width: 16), // Add some space between buttons
                       InkWell(
@@ -359,7 +362,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                         ),
                         onTap: ()  {
                           print("asddddddddkjfkjanfkjadnfkjanfiewjnkzj ckjaegnioqenfoiangioqebno dvoqe gt");
-                          startElection("lala",ethClient!);
+                          buyStock("lala",40,600,ethClient!);
                         },
                       ),
                     ],
